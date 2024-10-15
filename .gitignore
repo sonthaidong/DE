@@ -1,4 +1,9 @@
-/docs/*
+/docs/*.docx
+/docs/*.doc
+/docs/*.xlsx
+/docs/*.xls
+/docs/*.pdf
+/docs/*.pptx
 /cassandra/cassandra-node-0/
 /cassandra/cassandra-node-1/
 /cassandra/cassandra-node-2/
