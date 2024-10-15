@@ -1,0 +1,99 @@
+services:
+  namenode:
+    image: apache/hadoop:3.4
+    container_name: namenode
+    hostname: namenode
+    networks:
+      broker:
+        ipv4_address: 172.18.0.10
+    ports:
+      - 9870:9870
+    environment:
+      - ENSURE_NAMENODE_DIR="/tmp/hadoop-root/dfs/name"
+    volumes:
+      - ./namenode:/tmp/hadoop-hadoop/dfs/name
+    env_file:
+      - ./config
+    command: ["hdfs", "namenode"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9870"]
+      interval: 10s
+      retries: 3
+
+  datanode1:
+    image: apache/hadoop:3.4
+    container_name: datanode1
+    networks:
+      broker:
+        ipv4_address: 172.18.0.11
+    ports:
+      - 9864:9864
+    environment:
+      - NAMENODE_HOST=namenode
+    volumes:
+      - ./node-1:/tmp/hadoop-hadoop/dfs
+    env_file:
+      - ./config
+    command: ["hdfs", "datanode"]
+    depends_on:
+      - namenode
+
+  datanode2:
+    image: apache/hadoop:3.4
+    container_name: datanode2
+    networks:
+      broker:
+        ipv4_address: 172.18.0.12
+    ports:
+      - 9865:9864
+    environment:
+      - NAMENODE_HOST=namenode
+    volumes:
+      - ./node-2:/tmp/hadoop-hadoop/dfs
+    env_file:
+      - ./config
+    command: ["hdfs", "datanode"]
+    depends_on:
+      - namenode
+
+  resourcemanager:
+    image: apache/hadoop:3.4
+    container_name: resourcemanager
+    hostname: resourcemanager
+    networks:
+      broker:
+        ipv4_address: 172.18.0.18
+    ports:
+      - 8088:8088
+    environment:
+      - NAMENODE_HOST=namenode
+    env_file:
+      - ./config
+    command: ["yarn", "resourcemanager"]
+    depends_on:
+      - namenode
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8088"]
+      interval: 10s
+      retries: 3
+
+  nodemanager:
+    image: apache/hadoop:3.4
+    container_name: nodemanager
+    networks:
+      broker:
+        ipv4_address: 172.18.0.19
+    ports:
+      - 8042:8042
+    environment:
+      - NAMENODE_HOST=namenode
+    env_file:
+      - ./config
+    command: ["yarn", "nodemanager"]
+    depends_on:
+      - resourcemanager
+
+networks:
+  broker:
+    external: true
+    name: broker-net

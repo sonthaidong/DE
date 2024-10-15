@@ -1,0 +1,12 @@
+/docs/*
+/cassandra/cassandra-node-0/
+/cassandra/cassandra-node-1/
+/cassandra/cassandra-node-2/
+/hadoop/namenode/
+/hadoop/node-1/
+/hadoop/node-2/
+/hive/warehouse-hs2/
+/hive/warehouse-mst/
+/mysql/mysql_data/
+/mysql/mysql-connector-j-8.0.33/*
+!/mysql/mysql-connector-j-8.0.33/mysql-connector-j-8.0.33.jar

@@ -1,0 +1,93 @@
+services:
+  spark-master:
+    image: apache/spark:3.5.3
+    container_name: spark-master
+    hostname: spark-master
+    networks:
+      broker:
+        ipv4_address: 172.18.0.20
+    ports:
+      - 8080:8080 # Web UI
+      - 7077:7077 # Spark Master Port
+    environment:
+      - SPARK_MODE=master
+      # - SPARK_MASTER_HOST=spark-master
+      # - SPARK_MASTER_PORT=7077
+      # - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_RPC_AUTHENTICATION_ENABLED=false
+      # - SPARK_SUBMIT_YARN_SUPPORT=true
+      # - SPARK_YARN_MODE=true
+      # - SPARK_HISTORY_OPTS=-Dspark.history.fs.logDirectory=hdfs://namenode:8020/spark-events
+    volumes:
+      - ./conf/spark-env.sh:/opt/spark/conf/spark-env.sh
+    command:
+      [
+        "/bin/bash",
+        "-c",
+        "/opt/spark/bin/spark-class org.apache.spark.deploy.master.Master && tail -f /dev/null",
+      ]
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 10s
+      retries: 3
+
+  spark-worker-1:
+    image: apache/spark:3.5.3
+    container_name: spark-worker-1
+    networks:
+      broker:
+        ipv4_address: 172.18.0.21
+    ports:
+      - 8081:8081
+    environment:
+      - SPARK_MODE=worker
+      # - SPARK_YARN_MODE=true
+    volumes:
+      - ./conf/spark-env.sh:/opt/spark/conf/spark-env.sh
+    command:
+      [
+        "/bin/bash",
+        "-c",
+        "/opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077 && tail -f /dev/null",
+      ]
+    depends_on:
+      - spark-master
+
+  spark-worker-2:
+    image: apache/spark:3.5.3
+    container_name: spark-worker-2
+    networks:
+      broker:
+        ipv4_address: 172.18.0.22
+    ports:
+      - 8082:8081
+    environment:
+      - SPARK_MODE=worker
+      # - SPARK_YARN_MODE=true
+    volumes:
+      - ./conf/spark-env.sh:/opt/spark/conf/spark-env.sh
+    command:
+      [
+        "/bin/bash",
+        "-c",
+        "/opt/spark/sbin/start-worker.sh spark://spark-master:7077 && tail -f /dev/null",
+      ]
+    depends_on:
+      - spark-master
+
+  spark-submit:
+    image: apache/spark:3.5.3
+    container_name: spark-submit
+    networks:
+      broker:
+        ipv4_address: 172.18.0.29
+    ports:
+      - 4040:4040
+    entrypoint: ["/bin/bash"]
+    tty: true
+
+networks:
+  broker:
+    external: true
+    name: broker-net
