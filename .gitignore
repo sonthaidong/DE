@@ -15,3 +15,4 @@
 /mysql/mysql_data/
 /mysql/mysql-connector-j-8.0.33/*
 !/mysql/mysql-connector-j-8.0.33/mysql-connector-j-8.0.33.jar
+__pycache__/
